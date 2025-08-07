@@ -28,6 +28,84 @@ export default function WeatherPage() {
   const API_KEY = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || 'demo_key';
   const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather';
 
+  const getMockWeatherData = (cityName: string): WeatherData => {
+    const city = cityName.toLowerCase();
+    
+    // Different mock data for different cities
+    const mockWeatherMap: { [key: string]: Partial<WeatherData> } = {
+      'london': {
+        name: 'London',
+        country: 'GB',
+        temperature: 15,
+        condition: 'Clouds',
+        description: 'overcast clouds',
+        icon: '04d',
+        humidity: 78,
+        windSpeed: 3.2,
+        feelsLike: 13
+      },
+      'new york': {
+        name: 'New York',
+        country: 'US',
+        temperature: 22,
+        condition: 'Clear',
+        description: 'clear sky',
+        icon: '01d',
+        humidity: 45,
+        windSpeed: 2.1,
+        feelsLike: 24
+      },
+      'tokyo': {
+        name: 'Tokyo',
+        country: 'JP',
+        temperature: 18,
+        condition: 'Rain',
+        description: 'light rain',
+        icon: '10d',
+        humidity: 85,
+        windSpeed: 1.8,
+        feelsLike: 16
+      },
+      'paris': {
+        name: 'Paris',
+        country: 'FR',
+        temperature: 12,
+        condition: 'Clouds',
+        description: 'few clouds',
+        icon: '02d',
+        humidity: 62,
+        windSpeed: 2.7,
+        feelsLike: 10
+      },
+      'sydney': {
+        name: 'Sydney',
+        country: 'AU',
+        temperature: 25,
+        condition: 'Clear',
+        description: 'clear sky',
+        icon: '01d',
+        humidity: 55,
+        windSpeed: 4.1,
+        feelsLike: 27
+      }
+    };
+
+    // Return specific mock data or default
+    const mockData = mockWeatherMap[city] || {
+      name: cityName.charAt(0).toUpperCase() + cityName.slice(1),
+      country: 'XX',
+      temperature: Math.floor(Math.random() * 25) + 10, // Random temp between 10-35°C
+      condition: 'Clear',
+      description: 'clear sky',
+      icon: '01d',
+      humidity: Math.floor(Math.random() * 40) + 40, // Random humidity 40-80%
+      windSpeed: Math.round((Math.random() * 5 + 1) * 10) / 10, // Random wind 1-6 m/s
+      feelsLike: Math.floor(Math.random() * 25) + 8
+    };
+
+    return mockData as WeatherData;
+  };
+
   const fetchWeather = async (cityName: string) => {
     if (!cityName.trim()) return;
 
@@ -36,6 +114,17 @@ export default function WeatherPage() {
     setWeather(null);
 
     try {
+      // If no API key, use mock data for demonstration
+      if (API_KEY === 'demo_key') {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Mock weather data based on city name
+        const mockData = getMockWeatherData(cityName);
+        setWeather(mockData);
+        return;
+      }
+
       const response = await fetch(
         `${BASE_URL}?q=${encodeURIComponent(cityName)}&appid=${API_KEY}&units=metric`
       );
@@ -115,24 +204,27 @@ export default function WeatherPage() {
 
       {/* API Key Notice */}
       {API_KEY === 'demo_key' && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
           <div className="flex">
-            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mt-0.5" />
+            <ExclamationTriangleIcon className="h-5 w-5 text-blue-400 mt-0.5" />
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                API Key Required
+              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                Demo Mode - Using Mock Data
               </h3>
-              <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-                To use the weather feature, you need to get a free API key from{' '}
+              <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                Currently showing sample weather data. For real weather data, get a free API key from{' '}
                 <a 
                   href="https://openweathermap.org/api" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="underline hover:no-underline"
+                  className="underline hover:no-underline font-medium"
                 >
                   OpenWeatherMap
                 </a>{' '}
-                and add it to your environment variables as NEXT_PUBLIC_OPENWEATHER_API_KEY.
+                and add it as NEXT_PUBLIC_OPENWEATHER_API_KEY in your .env.local file.
+              </p>
+              <p className="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                <strong>Try these cities:</strong> London, New York, Tokyo, Paris, Sydney
               </p>
             </div>
           </div>
